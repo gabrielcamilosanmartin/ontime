@@ -1,0 +1,34 @@
+version: '3'
+services:
+    mysql:
+        build:
+            context: ./docker/mysql
+        container_name: ${APP_NAME}-mysql
+        environment:
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+            - MYSQL_DATABASE=${DB_NAME}
+            - MYSQL_USER=${DB_USER}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+        ports:
+            - ${DB_PORT}:3306
+        volumes:
+            - ./docker/mysql/data:/var/lib/mysql
+            - ./docker/mysql/rollback:/rollback
+ 
+    wordpress:
+        depends_on:
+            - mysql
+        image: wordpress:latest
+        container_name: ${APP_NAME}-wordpress
+        volumes:
+            - ./src:/var/www/html
+        ports:
+            - "8000:80"
+        environment:
+            - WORDPRESS_DB_HOST=mysql:3306
+            - WORDPRESS_DB_USER=${DB_USER}
+            - WORDPRESS_DB_PASSWORD=${DB_PASSWORD}
+            - WORDPRESS_DB_NAME=${DB_NAME}
+
+        env_file:
+            - .env
